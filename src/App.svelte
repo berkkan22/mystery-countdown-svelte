@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
+  import birthdayHero from './assets/birthday-hero.jpg'
 
   const targetDate = new Date('2026-09-15T00:00:00+02:00')
-  const targetLabel = '15.09.2026'
 
   type TimeLeft = {
     total: number
@@ -13,16 +13,24 @@
   }
 
   let now = new Date()
-  let isBirthday = false
+  let path = window.location.pathname
   let isPlaying = false
-  let showConfetti = false
   let audioContext: AudioContext | null = null
   let stopSong: (() => void) | null = null
 
-  $: path = window.location.pathname
   $: isBirthdayRoute = path.startsWith('/geburtstag')
   $: timeLeft = getTimeLeft(now, targetDate)
-  $: isUnlocked = isBirthdayRoute || timeLeft.total <= 0 || isBirthday
+
+  const wishes = [
+    'Du machst die Welt ein Stück heller — einfach, weil du du bist. Alles Gute, liebe Ece!',
+    'Möge dein neues Lebensjahr so warm und hell erstrahlen wie dein Lachen.',
+    'Jeder Tag mit dir ist ein Geschenk. Danke, dass es dich gibt.',
+    'Ein Jahr älter, ein Jahr weiser, ein Jahr mehr geliebt.',
+    'Heute feiern wir dich — denn du bist der Grund zum Feiern.',
+    'Mögen all deine Wünsche ihren Weg zu dir finden.',
+    'Du bist nicht nur ein Jahr älter, sondern ein Jahr wunderbarer.',
+    'Träume groß, liebe tief, lass die Seele frei — dieses Jahr gehört dir.',
+  ]
 
   function getTimeLeft(current: Date, target: Date): TimeLeft {
     const total = Math.max(0, target.getTime() - current.getTime())
@@ -41,20 +49,9 @@
     return value.toString().padStart(2, '0')
   }
 
-  function goBirthday() {
-    history.pushState({}, '', '/geburtstag')
+  function navigate(to: string) {
+    history.pushState({}, '', to)
     path = window.location.pathname
-    isBirthday = true
-    showConfetti = true
-    void playHappyBirthday()
-  }
-
-  function goHome() {
-    history.pushState({}, '', '/')
-    path = window.location.pathname
-    isBirthday = false
-    showConfetti = false
-    stopHappyBirthday()
   }
 
   function createOscillator(ctx: AudioContext, frequency: number, start: number, duration: number) {
@@ -64,7 +61,7 @@
     oscillator.type = 'triangle'
     oscillator.frequency.setValueAtTime(frequency, start)
     gain.gain.setValueAtTime(0.0001, start)
-    gain.gain.exponentialRampToValueAtTime(0.18, start + 0.03)
+    gain.gain.exponentialRampToValueAtTime(0.12, start + 0.03)
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration)
 
     oscillator.connect(gain)
@@ -73,8 +70,12 @@
     oscillator.stop(start + duration + 0.03)
   }
 
-  async function playHappyBirthday() {
-    stopHappyBirthday()
+  async function toggleHappyBirthday() {
+    if (isPlaying) {
+      stopHappyBirthday()
+      return
+    }
+
     const AudioCtor = window.AudioContext || window.webkitAudioContext
     audioContext = new AudioCtor()
     await audioContext.resume()
@@ -133,10 +134,6 @@
 
     window.addEventListener('popstate', popstate)
 
-    if (isBirthdayRoute) {
-      showConfetti = true
-    }
-
     return () => {
       window.clearInterval(tick)
       window.removeEventListener('popstate', popstate)
@@ -147,72 +144,99 @@
 </script>
 
 <svelte:head>
-  <title>{isUnlocked ? 'Alles Gute zum Geburtstag!' : 'Mystery Countdown'}</title>
+  <title>{isBirthdayRoute ? 'Alles Gute, liebe Ece 🎂' : 'Etwas Besonderes erwartet dich…'}</title>
   <meta
     name="description"
-    content="A mysterious countdown to 15.09.2026 with a birthday surprise and Happy Birthday music."
+    content="Ein geheimnisvoller Countdown bis zum 15.09.2026 und eine liebevolle Geburtstagsseite."
   />
 </svelte:head>
 
-<main class:party={isUnlocked}>
-  <div class="background-orb orb-one"></div>
-  <div class="background-orb orb-two"></div>
-  <div class="background-orb orb-three"></div>
-
-  {#if showConfetti || isUnlocked}
-    <div class="confetti" aria-hidden="true">
-      {#each Array(34) as _, i}
-        <i style={`--i: ${i}; --delay: ${-(i % 13) * 0.38}s; --left: ${(i * 29) % 100}%; --hue: ${(i * 37) % 360}deg`}></i>
+{#if isBirthdayRoute}
+  <main class="birthday-scene">
+    <div class="soft-dots" aria-hidden="true">
+      {#each Array(22) as _, i}
+        <span style={`--i:${i}; --left:${(i * 37 + 3) % 100}%; --top:${(i * 29 + 2) % 42}%; --size:${8 + (i % 4) * 5}px; --delay:${-(i % 8) * 0.7}s`}></span>
       {/each}
     </div>
-  {/if}
 
-  <section class="card" aria-live="polite">
-    <div class="eyebrow">{isUnlocked ? 'Überraschung freigeschaltet' : 'Mystery Countdown'}</div>
+    <button
+      class="music-button"
+      type="button"
+      aria-label={isPlaying ? 'Musik stumm schalten' : 'Musik abspielen'}
+      on:click={toggleHappyBirthday}
+    >
+      {isPlaying ? '🎵' : '♫'}
+    </button>
 
-    {#if isUnlocked}
-      <div class="cake" aria-hidden="true">
-        <span class="flame"></span>
-        <span class="candle"></span>
-        <span class="icing"></span>
-        <span class="base"></span>
-      </div>
-      <h1>Alles Gute zum Geburtstag!</h1>
-      <p class="subtitle">
-        Heute ist dein Tag. Ich wünsche dir ganz viel Liebe, Glück, Kuchen und magische Momente. 🎉
+    <section class="birthday-content">
+      <p class="birthday-kicker">HEUTE IST EIN BESONDERER TAG</p>
+      <h1 class="birthday-title">Herzlichen Glückwunsch,<br /><span>liebe Ece</span></h1>
+      <p class="birthday-subtitle">
+        Heute gehört dieser Tag ganz dir. Lass dich feiern, tragen und umhüllen<br class="desktop" />
+        — mit Worten, die von Herzen kommen.
       </p>
 
-      <div class="actions">
-        <button class="primary" type="button" on:click={playHappyBirthday}>
-          {isPlaying ? 'Happy Birthday läuft …' : 'Happy Birthday Song abspielen'}
-        </button>
-        <button class="secondary" type="button" on:click={goHome}>Countdown ansehen</button>
-      </div>
-    {:else}
-      <div class="lock" aria-hidden="true">?</div>
-      <h1>Etwas Besonderes wartet auf dich</h1>
-      <p class="subtitle">Der Countdown läuft bis zum {targetLabel}. Komm zurück, wenn die Zeit abgelaufen ist.</p>
+      <img
+        class="hero-image"
+        src={birthdayHero}
+        alt="Warm beleuchtete Geburtstagsszene mit Blumen und Kerzenschein"
+      />
 
-      <div class="timer" aria-label={`Countdown bis ${targetLabel}`}>
-        <div class="time-box">
-          <strong>{timeLeft.days}</strong>
-          <span>Tage</span>
-        </div>
-        <div class="time-box">
-          <strong>{pad(timeLeft.hours)}</strong>
-          <span>Stunden</span>
-        </div>
-        <div class="time-box">
-          <strong>{pad(timeLeft.minutes)}</strong>
-          <span>Minuten</span>
-        </div>
-        <div class="time-box">
-          <strong>{pad(timeLeft.seconds)}</strong>
-          <span>Sekunden</span>
-        </div>
+      <blockquote>
+        <span>“</span>
+        <p>Du machst die Welt ein Stück heller — einfach, weil du du bist. Alles Gute, liebe Ece!</p>
+        <span>”</span>
+      </blockquote>
+
+      <h2>GEDANKEN FÜR DICH</h2>
+      <div class="wish-grid">
+        {#each wishes as wish}
+          <p>{wish}</p>
+        {/each}
       </div>
 
-      <button class="ghost" type="button" on:click={goBirthday}>Geburtstagsseite öffnen</button>
-    {/if}
-  </section>
-</main>
+      <div class="birthday-footer">
+        <div></div>
+        <p>Alles Liebe zum Geburtstag, Ece.</p>
+        <a href="/" on:click|preventDefault={() => navigate('/')}>← <span>Zurück zum Anfang</span></a>
+      </div>
+    </section>
+  </main>
+{:else}
+  <main class="countdown-scene">
+    <div class="stars" aria-hidden="true">
+      {#each Array(52) as _, i}
+        <span style={`--left:${(i * 47 + 11) % 100}%; --top:${(i * 31 + 5) % 100}%; --size:${1.1 + (i % 4) * 0.55}px; --delay:${-(i % 9) * 0.45}s; --opacity:${0.35 + (i % 5) * 0.13}`}></span>
+      {/each}
+    </div>
+
+    <section class="countdown-content">
+      <p class="kicker">ETWAS BESONDERES NAHT</p>
+      <h1>Die Zeit verrät es noch nicht.<br /><span>Aber sie läuft dir davon.</span></h1>
+
+      <div class="timer" aria-label="Countdown bis 15.09.2026">
+        <div class="unit">
+          <div class="number-wrap"><i></i><span>{timeLeft.days}</span></div>
+          <small>TAGE</small>
+        </div>
+        <b>:</b>
+        <div class="unit">
+          <div class="number-wrap"><i></i><span>{pad(timeLeft.hours)}</span></div>
+          <small>STUNDEN</small>
+        </div>
+        <b>:</b>
+        <div class="unit">
+          <div class="number-wrap"><i></i><span>{pad(timeLeft.minutes)}</span></div>
+          <small>MINUTEN</small>
+        </div>
+        <b>:</b>
+        <div class="unit">
+          <div class="number-wrap"><i></i><span>{pad(timeLeft.seconds)}</span></div>
+          <small>SEKUNDEN</small>
+        </div>
+      </div>
+
+      <p class="wait-text">Sei geduldig. Manche Dinge sind es wert, darauf zu warten.</p>
+    </section>
+  </main>
+{/if}
