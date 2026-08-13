@@ -22,7 +22,7 @@
   $: timeLeft = getTimeLeft(now, targetDate)
 
   const wishes = [
-    'Du machst die Welt ein Stück heller — einfach, weil du du bist. Alles Gute, liebe Ece!',
+    'Du machst die Welt ein Stück heller — einfach, weil du du bist. Alles Gute, Ece!',
     'Möge dein neues Lebensjahr so warm und hell erstrahlen wie dein Lachen.',
     'Jeder Tag mit dir ist ein Geschenk. Danke, dass es dich gibt.',
     'Ein Jahr älter, ein Jahr weiser, ein Jahr mehr geliebt.',
@@ -171,7 +171,7 @@
 </script>
 
 <svelte:head>
-  <title>{isBirthdayRoute ? 'Alles Gute, liebe Ece 🎂' : 'Etwas Besonderes erwartet dich…'}</title>
+  <title>{isBirthdayRoute ? 'Alles Gute, Ece 🎂' : 'Etwas Besonderes erwartet dich…'}</title>
   <meta
     name="description"
     content="Ein geheimnisvoller Countdown bis zum 15.09.2026 und eine liebevolle Geburtstagsseite."
@@ -212,7 +212,7 @@
 
       <blockquote>
         <span>“</span>
-        <p>Du machst die Welt ein Stück heller — einfach, weil du du bist. Alles Gute, liebe Ece!</p>
+        <p>Du machst die Welt ein Stück heller — einfach, weil du du bist. Alles Gute, Ece!</p>
         <span>”</span>
       </blockquote>
 
