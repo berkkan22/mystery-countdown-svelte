@@ -90,7 +90,8 @@
   }
 
   function forwardToBirthday() {
-    window.location.assign('/geburtstag')
+    showFirework = false
+    navigate('/geburtstag')
   }
 
   function navigate(to: string) {
@@ -98,6 +99,7 @@
     path = window.location.pathname
 
     if (to === '/') {
+      birthdayAutoplayTried = false
       resetCountdown()
       return
     }
@@ -338,7 +340,7 @@
         {#each fireworkBursts as burst}
           <div class="firework-burst" style={`--x:${burst.x}%; --y:${burst.y}%; --delay:${burst.delay}ms`}>
             {#each Array(22) as _, spark}
-              <span style={`--angle:${spark * 16.36}deg; --distance:${78 + (spark % 5) * 16}px; --color:${fireworkColors[spark % fireworkColors.length]}`}></span>
+              <span style={`--angle:${spark * 16.36 + (burst.x % 13) - (spark % 4) * 5}deg; --distance:${66 + ((spark * 17 + burst.x) % 8) * 12}px; --fall:${-36 + ((spark * 19 + burst.y) % 11) * 10}px; --spark-size:${4 + ((spark + burst.delay) % 5)}px; --color:${fireworkColors[(spark + burst.delay) % fireworkColors.length]}`}></span>
             {/each}
           </div>
         {/each}
