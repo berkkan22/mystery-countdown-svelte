@@ -2,9 +2,9 @@
   import { onMount, onDestroy } from 'svelte'
   import birthdayHero from './assets/birthday-hero.jpg'
 
-  // Dev preview: make the countdown end 10 seconds after each page load.
+  // Dev preview: make the countdown end 3 seconds after each start-page load.
   // Restore to new Date('2026-09-15T00:00:00+02:00') for production.
-  const targetDate = new Date(Date.now() + 10_000)
+  let targetDate = new Date(Date.now() + 3_000)
 
   type TimeLeft = {
     total: number
@@ -30,9 +30,7 @@
   $: if (!isBirthdayRoute && isCountdownDone && !revealScheduled) {
     revealScheduled = true
     showFirework = true
-    window.setTimeout(() => {
-      window.location.assign('/geburtstag')
-    }, 1800)
+    window.setTimeout(forwardToBirthday, 2600)
   }
 
   $: if (isBirthdayRoute && !birthdayAutoplayTried) {
@@ -55,6 +53,18 @@
     'Träume groß, liebe tief, lass die Seele frei — dieses Jahr gehört dir.',
   ]
 
+  const fireworkBursts = [
+    { x: 50, y: 36, delay: 0 },
+    { x: 34, y: 46, delay: 120 },
+    { x: 66, y: 45, delay: 220 },
+    { x: 44, y: 58, delay: 340 },
+    { x: 58, y: 57, delay: 430 },
+    { x: 25, y: 34, delay: 520 },
+    { x: 75, y: 33, delay: 620 },
+  ]
+
+  const fireworkColors = ['#fff3bd', '#ff4f8b', '#46e7ff', '#b47cff', '#7dff8a', '#ffb347']
+
   function getTimeLeft(current: Date, target: Date): TimeLeft {
     const total = Math.max(0, target.getTime() - current.getTime())
     const secondsTotal = Math.floor(total / 1000)
@@ -72,9 +82,26 @@
     return value.toString().padStart(2, '0')
   }
 
+  function resetCountdown() {
+    now = new Date()
+    targetDate = new Date(Date.now() + 3_000)
+    revealScheduled = false
+    showFirework = false
+  }
+
+  function forwardToBirthday() {
+    window.location.assign('/geburtstag')
+  }
+
   function navigate(to: string) {
     history.pushState({}, '', to)
     path = window.location.pathname
+
+    if (to === '/') {
+      resetCountdown()
+      return
+    }
+
     window.setTimeout(revealVisibleBirthdayContent, 0)
   }
 
@@ -194,7 +221,17 @@
 
     const popstate = () => {
       path = window.location.pathname
+      if (path === '/') {
+        resetCountdown()
+      }
       window.setTimeout(observeRevealNodes, 0)
+    }
+
+    const pageshow = () => {
+      path = window.location.pathname
+      if (path === '/') {
+        resetCountdown()
+      }
     }
 
     const startAfterInteraction = () => {
@@ -204,6 +241,7 @@
     }
 
     window.addEventListener('popstate', popstate)
+    window.addEventListener('pageshow', pageshow)
 
     if (isBirthdayRoute) {
       void startHappyBirthday().catch(() => {
@@ -218,6 +256,7 @@
       revealObserver?.disconnect()
       revealObserver = null
       window.removeEventListener('popstate', popstate)
+      window.removeEventListener('pageshow', pageshow)
       window.removeEventListener('pointerdown', startAfterInteraction)
       window.removeEventListener('keydown', startAfterInteraction)
     }
@@ -296,13 +335,18 @@
 
     {#if showFirework}
       <div class="firework-layer" aria-hidden="true">
-        {#each Array(3) as _, burst}
-          <div class="firework-burst" style={`--x:${burst === 0 ? 50 : burst === 1 ? 34 : 66}%; --y:${burst === 0 ? 38 : burst === 1 ? 47 : 46}%; --delay:${burst * 180}ms`}>
-            {#each Array(14) as _, spark}
-              <span style={`--angle:${spark * 25.7}deg; --distance:${72 + (spark % 3) * 12}px; --color:${spark % 4 === 0 ? '#fff3bd' : spark % 4 === 1 ? '#ff8fb0' : spark % 4 === 2 ? '#9fe8ff' : '#c6a8ff'}`}></span>
+        {#each fireworkBursts as burst}
+          <div class="firework-burst" style={`--x:${burst.x}%; --y:${burst.y}%; --delay:${burst.delay}ms`}>
+            {#each Array(22) as _, spark}
+              <span style={`--angle:${spark * 16.36}deg; --distance:${78 + (spark % 5) * 16}px; --color:${fireworkColors[spark % fireworkColors.length]}`}></span>
             {/each}
           </div>
         {/each}
+        <div class="firework-glitter">
+          {#each Array(42) as _, i}
+            <span style={`--left:${(i * 23 + 7) % 100}%; --top:${(i * 37 + 11) % 70}%; --delay:${(i % 10) * 90}ms; --color:${fireworkColors[i % fireworkColors.length]}`}></span>
+          {/each}
+        </div>
       </div>
     {/if}
 
