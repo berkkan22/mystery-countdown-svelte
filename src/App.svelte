@@ -170,7 +170,7 @@
 
     <section class="birthday-content">
       <p class="birthday-kicker">HEUTE IST EIN BESONDERER TAG</p>
-      <h1 class="birthday-title">Herzlichen Glückwunsch,<br /><span>liebe Ece</span></h1>
+      <h1 class="birthday-title">Herzlichen Glückwunsch,<br /><span>Ece</span></h1>
       <p class="birthday-subtitle">
         Heute gehört dieser Tag ganz dir. Lass dich feiern, tragen und umhüllen<br class="desktop" />
         — mit Worten, die von Herzen kommen.
