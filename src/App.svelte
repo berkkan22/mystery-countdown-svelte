@@ -2,7 +2,9 @@
   import { onMount, onDestroy } from 'svelte'
   import birthdayHero from './assets/birthday-hero.jpg'
 
-  const targetDate = new Date('2026-09-15T00:00:00+02:00')
+  // Dev preview: make the countdown end 10 seconds after each page load.
+  // Restore to new Date('2026-09-15T00:00:00+02:00') for production.
+  const targetDate = new Date(Date.now() + 10_000)
 
   type TimeLeft = {
     total: number
@@ -15,12 +17,26 @@
   let now = new Date()
   let path = window.location.pathname
   let isPlaying = false
+  let revealScheduled = false
+  let birthdayAutoplayTried = false
   let animatedNodes: HTMLElement[] = []
   let audioContext: AudioContext | null = null
   let stopSong: (() => void) | null = null
 
   $: isBirthdayRoute = path.startsWith('/geburtstag')
   $: timeLeft = getTimeLeft(now, targetDate)
+  $: isCountdownDone = timeLeft.total === 0
+  $: if (!isBirthdayRoute && isCountdownDone && !revealScheduled) {
+    revealScheduled = true
+    window.setTimeout(() => navigate('/geburtstag'), 850)
+  }
+
+  $: if (isBirthdayRoute && !birthdayAutoplayTried) {
+    birthdayAutoplayTried = true
+    window.setTimeout(() => {
+      void startHappyBirthday().catch(() => undefined)
+    }, 0)
+  }
 
   const wishes = [
     'Du machst die Welt ein Stück heller — einfach, weil du du bist. Alles Gute, Ece!',
@@ -256,10 +272,16 @@
     </div>
 
     <section class="countdown-content">
-      <p class="kicker countdown-enter">ETWAS BESONDERES NAHT</p>
-      <h1 class="countdown-enter delay-1">Die Zeit verrät es noch nicht.<br /><span>Aber sie läuft dir davon.</span></h1>
+      <p class="kicker countdown-enter">{isCountdownDone ? 'DAS WARTEN IST VORBEI' : 'ETWAS BESONDERES NAHT'}</p>
+      <h1 class="countdown-enter delay-1">
+        {#if isCountdownDone}
+          Gleich wird das Geheimnis gelüftet.
+        {:else}
+          Die Zeit verrät es noch nicht.<br /><span>Aber sie läuft dir davon.</span>
+        {/if}
+      </h1>
 
-      <div class="timer countdown-enter delay-2" aria-label="Countdown bis 15.09.2026">
+      <div class:complete={isCountdownDone} class="timer countdown-enter delay-2" aria-label="Countdown bis 15.09.2026">
         <div class="unit">
           <div class="number-wrap"><i></i><span>{timeLeft.days}</span></div>
           <small>TAGE</small>
@@ -281,7 +303,9 @@
         </div>
       </div>
 
-      <p class="wait-text countdown-enter delay-3">Sei geduldig. Manche Dinge sind es wert, darauf zu warten.</p>
+      <p class="wait-text countdown-enter delay-3">
+        {isCountdownDone ? 'Öffne die Überraschung…' : 'Sei geduldig. Manche Dinge sind es wert, darauf zu warten.'}
+      </p>
     </section>
   </main>
 {/if}
