@@ -18,6 +18,7 @@
   let path = window.location.pathname
   let isPlaying = false
   let revealScheduled = false
+  let showFirework = false
   let birthdayAutoplayTried = false
   let audioContext: AudioContext | null = null
   let revealObserver: IntersectionObserver | null = null
@@ -28,7 +29,10 @@
   $: isCountdownDone = timeLeft.total === 0
   $: if (!isBirthdayRoute && isCountdownDone && !revealScheduled) {
     revealScheduled = true
-    window.setTimeout(() => navigate('/geburtstag'), 850)
+    showFirework = true
+    window.setTimeout(() => {
+      window.location.assign('/geburtstag')
+    }, 1800)
   }
 
   $: if (isBirthdayRoute && !birthdayAutoplayTried) {
@@ -289,6 +293,18 @@
         <span style={`--left:${(i * 47 + 11) % 100}%; --top:${(i * 31 + 5) % 100}%; --size:${1.1 + (i % 4) * 0.55}px; --delay:${-(i % 9) * 0.45}s; --opacity:${0.35 + (i % 5) * 0.13}`}></span>
       {/each}
     </div>
+
+    {#if showFirework}
+      <div class="firework-layer" aria-hidden="true">
+        {#each Array(3) as _, burst}
+          <div class="firework-burst" style={`--x:${burst === 0 ? 50 : burst === 1 ? 34 : 66}%; --y:${burst === 0 ? 38 : burst === 1 ? 47 : 46}%; --delay:${burst * 180}ms`}>
+            {#each Array(14) as _, spark}
+              <span style={`--angle:${spark * 25.7}deg; --distance:${72 + (spark % 3) * 12}px; --color:${spark % 4 === 0 ? '#fff3bd' : spark % 4 === 1 ? '#ff8fb0' : spark % 4 === 2 ? '#9fe8ff' : '#c6a8ff'}`}></span>
+            {/each}
+          </div>
+        {/each}
+      </div>
+    {/if}
 
     <section class="countdown-content">
       <p class="kicker countdown-enter">{isCountdownDone ? 'DAS WARTEN IST VORBEI' : 'ETWAS BESONDERES NAHT'}</p>
