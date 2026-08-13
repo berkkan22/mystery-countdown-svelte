@@ -19,7 +19,6 @@
   let isPlaying = false
   let revealScheduled = false
   let birthdayAutoplayTried = false
-  let animatedNodes: HTMLElement[] = []
   let audioContext: AudioContext | null = null
   let stopSong: (() => void) | null = null
 
@@ -34,6 +33,7 @@
   $: if (isBirthdayRoute && !birthdayAutoplayTried) {
     birthdayAutoplayTried = true
     window.setTimeout(() => {
+      revealVisibleBirthdayContent()
       void startHappyBirthday().catch(() => undefined)
     }, 0)
   }
@@ -69,6 +69,7 @@
   function navigate(to: string) {
     history.pushState({}, '', to)
     path = window.location.pathname
+    window.setTimeout(revealVisibleBirthdayContent, 0)
   }
 
   function createOscillator(ctx: AudioContext, frequency: number, start: number, duration: number) {
@@ -151,6 +152,15 @@
     stopSong = null
   }
 
+  function revealVisibleBirthdayContent() {
+    document.querySelectorAll<HTMLElement>('.reveal').forEach((node) => {
+      const rect = node.getBoundingClientRect()
+      if (rect.top < window.innerHeight * 0.92) {
+        node.classList.add('is-visible')
+      }
+    })
+  }
+
   onMount(() => {
     const tick = window.setInterval(() => {
       now = new Date()
@@ -168,10 +178,18 @@
       { threshold: 0.18, rootMargin: '0px 0px -8% 0px' },
     )
 
-    animatedNodes.forEach((node) => observer.observe(node))
+    const observeRevealNodes = () => {
+      document.querySelectorAll<HTMLElement>('.reveal:not(.is-visible)').forEach((node) => {
+        observer.observe(node)
+      })
+      revealVisibleBirthdayContent()
+    }
+
+    observeRevealNodes()
 
     const popstate = () => {
       path = window.location.pathname
+      window.setTimeout(observeRevealNodes, 0)
     }
 
     const startAfterInteraction = () => {
@@ -229,34 +247,33 @@
     </button>
 
     <section class="birthday-content">
-      <p class="birthday-kicker reveal" bind:this={animatedNodes[0]}>HEUTE IST EIN BESONDERER TAG</p>
-      <h1 class="birthday-title reveal" bind:this={animatedNodes[1]}>Herzlichen Glückwunsch,<br /><span>Ece</span></h1>
-      <p class="birthday-subtitle reveal" bind:this={animatedNodes[2]}>
+      <p class="birthday-kicker reveal">HEUTE IST EIN BESONDERER TAG</p>
+      <h1 class="birthday-title reveal">Herzlichen Glückwunsch,<br /><span>Ece</span></h1>
+      <p class="birthday-subtitle reveal">
         Heute gehört dieser Tag ganz dir. Lass dich feiern, tragen und umhüllen<br class="desktop" />
         — mit Worten, die von Herzen kommen.
       </p>
 
       <img
         class="hero-image reveal float-card"
-        bind:this={animatedNodes[3]}
         src={birthdayHero}
         alt="Warm beleuchtete Geburtstagsszene mit Blumen und Kerzenschein"
       />
 
-      <blockquote class="reveal" bind:this={animatedNodes[4]}>
+      <blockquote class="reveal">
         <span>“</span>
         <p>Du machst die Welt ein Stück heller — einfach, weil du du bist. Alles Gute, Ece!</p>
         <span>”</span>
       </blockquote>
 
-      <h2 class="reveal" bind:this={animatedNodes[5]}>GEDANKEN FÜR DICH</h2>
+      <h2 class="reveal">GEDANKEN FÜR DICH</h2>
       <div class="wish-grid">
         {#each wishes as wish, i}
-          <p class="reveal wish-card" style={`--delay:${(i % 4) * 90}ms`} bind:this={animatedNodes[i + 6]}>{wish}</p>
+          <p class="reveal wish-card" style={`--delay:${(i % 4) * 90}ms`}>{wish}</p>
         {/each}
       </div>
 
-      <div class="birthday-footer reveal" bind:this={animatedNodes[14]}>
+      <div class="birthday-footer reveal">
         <div></div>
         <p>Alles Liebe zum Geburtstag, Ece.</p>
         <a href="/" on:click|preventDefault={() => navigate('/')}>← <span>Zurück zum Anfang</span></a>
