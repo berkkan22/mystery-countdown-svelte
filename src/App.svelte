@@ -20,6 +20,7 @@
   let revealScheduled = false
   let birthdayAutoplayTried = false
   let audioContext: AudioContext | null = null
+  let revealObserver: IntersectionObserver | null = null
   let stopSong: (() => void) | null = null
 
   $: isBirthdayRoute = path.startsWith('/geburtstag')
@@ -34,6 +35,7 @@
     birthdayAutoplayTried = true
     window.setTimeout(() => {
       revealVisibleBirthdayContent()
+      observeRevealNodes()
       void startHappyBirthday().catch(() => undefined)
     }, 0)
   }
@@ -161,29 +163,28 @@
     })
   }
 
-  onMount(() => {
-    const tick = window.setInterval(() => {
-      now = new Date()
-    }, 1000)
-
-    const observer = new IntersectionObserver(
+  function observeRevealNodes() {
+    revealObserver ??= new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('is-visible')
-            observer.unobserve(entry.target)
+            revealObserver?.unobserve(entry.target)
           }
         })
       },
-      { threshold: 0.18, rootMargin: '0px 0px -8% 0px' },
+      { threshold: 0.08, rootMargin: '0px 0px 12% 0px' },
     )
 
-    const observeRevealNodes = () => {
-      document.querySelectorAll<HTMLElement>('.reveal:not(.is-visible)').forEach((node) => {
-        observer.observe(node)
-      })
-      revealVisibleBirthdayContent()
-    }
+    document.querySelectorAll<HTMLElement>('.reveal:not(.is-visible)').forEach((node) => {
+      revealObserver?.observe(node)
+    })
+  }
+
+  onMount(() => {
+    const tick = window.setInterval(() => {
+      now = new Date()
+    }, 1000)
 
     observeRevealNodes()
 
@@ -210,7 +211,8 @@
 
     return () => {
       window.clearInterval(tick)
-      observer.disconnect()
+      revealObserver?.disconnect()
+      revealObserver = null
       window.removeEventListener('popstate', popstate)
       window.removeEventListener('pointerdown', startAfterInteraction)
       window.removeEventListener('keydown', startAfterInteraction)
