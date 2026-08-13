@@ -1,0 +1,10 @@
+services:
+  mystery-countdown:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mystery-countdown-svelte:latest
+    container_name: mystery-countdown-svelte
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-8080}:80"
