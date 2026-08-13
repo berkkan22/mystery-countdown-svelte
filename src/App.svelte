@@ -70,11 +70,10 @@
     oscillator.stop(start + duration + 0.03)
   }
 
-  async function toggleHappyBirthday() {
-    if (isPlaying) {
-      stopHappyBirthday()
-      return
-    }
+  async function startHappyBirthday() {
+    if (isPlaying) return
+
+    stopHappyBirthday()
 
     const AudioCtor = window.AudioContext || window.webkitAudioContext
     audioContext = new AudioCtor()
@@ -118,8 +117,20 @@
     }
   }
 
+  function toggleHappyBirthday() {
+    if (isPlaying) {
+      stopHappyBirthday()
+      return
+    }
+
+    void startHappyBirthday()
+  }
+
   function stopHappyBirthday() {
     stopSong?.()
+    void audioContext?.close()
+    audioContext = null
+    isPlaying = false
     stopSong = null
   }
 
@@ -132,11 +143,27 @@
       path = window.location.pathname
     }
 
+    const startAfterInteraction = () => {
+      if (isBirthdayRoute && !isPlaying) {
+        void startHappyBirthday().catch(() => undefined)
+      }
+    }
+
     window.addEventListener('popstate', popstate)
+
+    if (isBirthdayRoute) {
+      void startHappyBirthday().catch(() => {
+        isPlaying = false
+        window.addEventListener('pointerdown', startAfterInteraction, { once: true })
+        window.addEventListener('keydown', startAfterInteraction, { once: true })
+      })
+    }
 
     return () => {
       window.clearInterval(tick)
       window.removeEventListener('popstate', popstate)
+      window.removeEventListener('pointerdown', startAfterInteraction)
+      window.removeEventListener('keydown', startAfterInteraction)
     }
   })
 
