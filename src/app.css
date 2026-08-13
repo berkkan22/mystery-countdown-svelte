@@ -221,6 +221,10 @@ a {
   box-shadow: 0 20px 45px rgba(117, 78, 59, 0.12);
 }
 
+.float-card.is-visible {
+  animation: image-float 7s ease-in-out 900ms infinite;
+}
+
 blockquote {
   max-width: 760px;
   margin: 122px auto 0;
@@ -266,6 +270,21 @@ blockquote span {
   line-height: 1.7;
   box-shadow: 0 12px 30px rgba(154, 103, 82, 0.06);
   backdrop-filter: blur(10px);
+}
+
+.wish-card {
+  transition:
+    opacity 780ms ease,
+    transform 780ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    box-shadow 240ms ease,
+    border-color 240ms ease;
+  transition-delay: var(--delay, 0ms);
+}
+
+.wish-card:hover {
+  border-color: rgba(255, 176, 150, 0.75);
+  box-shadow: 0 18px 42px rgba(154, 103, 82, 0.12);
+  transform: translateY(-4px);
 }
 
 .birthday-footer {
@@ -353,6 +372,39 @@ blockquote span {
   animation-delay: var(--delay);
 }
 
+.reveal {
+  opacity: 0;
+  transform: translateY(34px) scale(0.985);
+  filter: blur(8px);
+  transition:
+    opacity 850ms ease,
+    transform 850ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    filter 850ms ease;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+.countdown-enter {
+  opacity: 0;
+  animation: soft-rise 900ms cubic-bezier(0.2, 0.9, 0.2, 1) forwards;
+}
+
+.delay-1 {
+  animation-delay: 120ms;
+}
+
+.delay-2 {
+  animation-delay: 260ms;
+}
+
+.delay-3 {
+  animation-delay: 420ms;
+}
+
 @keyframes glow-pulse {
   0%, 100% {
     opacity: 0.3;
@@ -381,6 +433,46 @@ blockquote span {
   }
   50% {
     transform: translate3d(8px, -12px, 0);
+  }
+}
+
+@keyframes image-float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-9px) rotate(-0.6deg);
+  }
+}
+
+@keyframes soft-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+
+  .reveal,
+  .countdown-enter {
+    opacity: 1;
+    transform: none;
+    filter: none;
   }
 }
 

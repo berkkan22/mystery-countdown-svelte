@@ -15,6 +15,7 @@
   let now = new Date()
   let path = window.location.pathname
   let isPlaying = false
+  let animatedNodes: HTMLElement[] = []
   let audioContext: AudioContext | null = null
   let stopSong: (() => void) | null = null
 
@@ -139,6 +140,20 @@
       now = new Date()
     }, 1000)
 
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.18, rootMargin: '0px 0px -8% 0px' },
+    )
+
+    animatedNodes.forEach((node) => observer.observe(node))
+
     const popstate = () => {
       path = window.location.pathname
     }
@@ -161,6 +176,7 @@
 
     return () => {
       window.clearInterval(tick)
+      observer.disconnect()
       window.removeEventListener('popstate', popstate)
       window.removeEventListener('pointerdown', startAfterInteraction)
       window.removeEventListener('keydown', startAfterInteraction)
@@ -197,33 +213,34 @@
     </button>
 
     <section class="birthday-content">
-      <p class="birthday-kicker">HEUTE IST EIN BESONDERER TAG</p>
-      <h1 class="birthday-title">Herzlichen Glückwunsch,<br /><span>Ece</span></h1>
-      <p class="birthday-subtitle">
+      <p class="birthday-kicker reveal" bind:this={animatedNodes[0]}>HEUTE IST EIN BESONDERER TAG</p>
+      <h1 class="birthday-title reveal" bind:this={animatedNodes[1]}>Herzlichen Glückwunsch,<br /><span>Ece</span></h1>
+      <p class="birthday-subtitle reveal" bind:this={animatedNodes[2]}>
         Heute gehört dieser Tag ganz dir. Lass dich feiern, tragen und umhüllen<br class="desktop" />
         — mit Worten, die von Herzen kommen.
       </p>
 
       <img
-        class="hero-image"
+        class="hero-image reveal float-card"
+        bind:this={animatedNodes[3]}
         src={birthdayHero}
         alt="Warm beleuchtete Geburtstagsszene mit Blumen und Kerzenschein"
       />
 
-      <blockquote>
+      <blockquote class="reveal" bind:this={animatedNodes[4]}>
         <span>“</span>
         <p>Du machst die Welt ein Stück heller — einfach, weil du du bist. Alles Gute, Ece!</p>
         <span>”</span>
       </blockquote>
 
-      <h2>GEDANKEN FÜR DICH</h2>
+      <h2 class="reveal" bind:this={animatedNodes[5]}>GEDANKEN FÜR DICH</h2>
       <div class="wish-grid">
-        {#each wishes as wish}
-          <p>{wish}</p>
+        {#each wishes as wish, i}
+          <p class="reveal wish-card" style={`--delay:${(i % 4) * 90}ms`} bind:this={animatedNodes[i + 6]}>{wish}</p>
         {/each}
       </div>
 
-      <div class="birthday-footer">
+      <div class="birthday-footer reveal" bind:this={animatedNodes[14]}>
         <div></div>
         <p>Alles Liebe zum Geburtstag, Ece.</p>
         <a href="/" on:click|preventDefault={() => navigate('/')}>← <span>Zurück zum Anfang</span></a>
@@ -239,10 +256,10 @@
     </div>
 
     <section class="countdown-content">
-      <p class="kicker">ETWAS BESONDERES NAHT</p>
-      <h1>Die Zeit verrät es noch nicht.<br /><span>Aber sie läuft dir davon.</span></h1>
+      <p class="kicker countdown-enter">ETWAS BESONDERES NAHT</p>
+      <h1 class="countdown-enter delay-1">Die Zeit verrät es noch nicht.<br /><span>Aber sie läuft dir davon.</span></h1>
 
-      <div class="timer" aria-label="Countdown bis 15.09.2026">
+      <div class="timer countdown-enter delay-2" aria-label="Countdown bis 15.09.2026">
         <div class="unit">
           <div class="number-wrap"><i></i><span>{timeLeft.days}</span></div>
           <small>TAGE</small>
@@ -264,7 +281,7 @@
         </div>
       </div>
 
-      <p class="wait-text">Sei geduldig. Manche Dinge sind es wert, darauf zu warten.</p>
+      <p class="wait-text countdown-enter delay-3">Sei geduldig. Manche Dinge sind es wert, darauf zu warten.</p>
     </section>
   </main>
 {/if}
