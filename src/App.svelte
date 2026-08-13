@@ -187,12 +187,13 @@
     </div>
 
     <button
+      class:muted={!isPlaying}
       class="music-button"
       type="button"
       aria-label={isPlaying ? 'Musik stumm schalten' : 'Musik abspielen'}
       on:click={toggleHappyBirthday}
     >
-      {isPlaying ? '🎵' : '♫'}
+      <span aria-hidden="true">♪</span>
     </button>
 
     <section class="birthday-content">
