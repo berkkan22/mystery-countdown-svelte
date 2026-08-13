@@ -61,6 +61,8 @@
     { x: 58, y: 57, delay: 430 },
     { x: 25, y: 34, delay: 520 },
     { x: 75, y: 33, delay: 620 },
+    { x: 18, y: 52, delay: 720 },
+    { x: 82, y: 54, delay: 820 },
   ]
 
   const fireworkColors = ['#fff3bd', '#ff4f8b', '#46e7ff', '#b47cff', '#7dff8a', '#ffb347']
@@ -339,13 +341,13 @@
       <div class="firework-layer" aria-hidden="true">
         {#each fireworkBursts as burst}
           <div class="firework-burst" style={`--x:${burst.x}%; --y:${burst.y}%; --delay:${burst.delay}ms`}>
-            {#each Array(22) as _, spark}
+            {#each Array(26) as _, spark}
               <span style={`--angle:${spark * 16.36 + (burst.x % 13) - (spark % 4) * 5}deg; --distance:${66 + ((spark * 17 + burst.x) % 8) * 12}px; --fall:${-36 + ((spark * 19 + burst.y) % 11) * 10}px; --spark-size:${4 + ((spark + burst.delay) % 5)}px; --color:${fireworkColors[(spark + burst.delay) % fireworkColors.length]}`}></span>
             {/each}
           </div>
         {/each}
         <div class="firework-glitter">
-          {#each Array(42) as _, i}
+          {#each Array(58) as _, i}
             <span style={`--left:${(i * 23 + 7) % 100}%; --top:${(i * 37 + 11) % 70}%; --delay:${(i % 10) * 90}ms; --color:${fireworkColors[i % fireworkColors.length]}`}></span>
           {/each}
         </div>

@@ -138,8 +138,6 @@ a {
 
 .timer.complete .number-wrap {
   animation: zero-pop 850ms cubic-bezier(0.17, 0.89, 0.32, 1.35) both;
-  border-color: rgba(236, 188, 115, 0.75);
-  box-shadow: 0 0 34px rgba(235, 198, 129, 0.38);
 }
 
 .timer.complete b {
@@ -152,10 +150,6 @@ a {
   z-index: 4;
   pointer-events: none;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse at 50% 42%, rgba(255, 206, 85, 0.08), transparent 34%),
-    radial-gradient(ellipse at 30% 46%, rgba(255, 79, 139, 0.08), transparent 26%),
-    radial-gradient(ellipse at 70% 44%, rgba(70, 231, 255, 0.08), transparent 26%);
   animation: firework-layer-fade 2.35s ease-out both;
 }
 
