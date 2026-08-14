@@ -347,12 +347,13 @@ a {
 
 .birthday-title span {
   display: inline-block;
+  padding-right: 0.08em;
   background: linear-gradient(90deg, #f5ba47, #ff9f6e);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   font-weight: 800;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.035em;
   text-shadow: 0 12px 36px rgba(245, 168, 72, 0.22);
 }
 
