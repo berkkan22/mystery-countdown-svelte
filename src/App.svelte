@@ -2,9 +2,7 @@
   import { onMount, onDestroy } from 'svelte'
   import birthdayHero from './assets/birthday-hero.jpg'
 
-  // Dev preview: make the countdown end 3 seconds after each start-page load.
-  // Restore to new Date('2026-09-15T00:00:00+02:00') for production.
-  let targetDate = new Date(Date.now() + 3_000)
+  const targetDate = new Date('2026-09-15T00:00:00+02:00')
 
   type TimeLeft = {
     total: number
@@ -88,7 +86,6 @@
 
   function resetCountdown() {
     now = new Date()
-    targetDate = new Date(Date.now() + 3_000)
     revealScheduled = false
     showFirework = false
   }
