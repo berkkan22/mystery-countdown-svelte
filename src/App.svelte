@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from 'svelte'
   import birthdayHero from './assets/birthday-hero.jpg'
 
-  const targetDate = new Date('2026-09-15T00:00:00+02:00')
+  const productionTargetDate = new Date('2026-09-15T00:00:00+02:00')
 
   type TimeLeft = {
     total: number
@@ -13,6 +13,11 @@
   }
 
   let now = new Date()
+  let selectedTargetDate = productionTargetDate
+  let smoothTargetDate: Date | null = null
+  let graceCountdownStarted = false
+  let devControlsOpen = false
+  let targetInputValue = formatDateTimeLocal(productionTargetDate)
   let path = window.location.pathname
   let isPlaying = false
   let revealScheduled = false
@@ -23,9 +28,17 @@
   let stopSong: (() => void) | null = null
 
   $: isBirthdayRoute = path.startsWith('/geburtstag')
-  $: timeLeft = getTimeLeft(now, targetDate)
+  $: activeTargetDate = smoothTargetDate ?? selectedTargetDate
+  $: isGraceCountdown = !!smoothTargetDate && !showFirework
+  $: timeLeft = getTimeLeft(now, activeTargetDate)
   $: isCountdownDone = timeLeft.total === 0
-  $: if (!isBirthdayRoute && isCountdownDone && !revealScheduled) {
+  $: if (
+    !isBirthdayRoute &&
+    graceCountdownStarted &&
+    smoothTargetDate &&
+    now.getTime() >= smoothTargetDate.getTime() &&
+    !revealScheduled
+  ) {
     revealScheduled = true
     showFirework = true
     window.setTimeout(forwardToBirthday, 5000)
@@ -84,10 +97,56 @@
     return value.toString().padStart(2, '0')
   }
 
+  function formatDateTimeLocal(date: Date) {
+    const year = date.getFullYear()
+    const month = pad(date.getMonth() + 1)
+    const day = pad(date.getDate())
+    const hours = pad(date.getHours())
+    const minutes = pad(date.getMinutes())
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+  }
+
+  function startGraceCountdown() {
+    now = new Date()
+    smoothTargetDate = new Date(Date.now() + 3_000)
+    graceCountdownStarted = true
+    revealScheduled = false
+    showFirework = false
+  }
+
+  function applyTargetDate() {
+    const parsed = new Date(targetInputValue)
+    if (Number.isNaN(parsed.getTime())) return
+
+    selectedTargetDate = parsed
+    resetCountdown()
+  }
+
+  function resetToProductionDate() {
+    selectedTargetDate = productionTargetDate
+    targetInputValue = formatDateTimeLocal(productionTargetDate)
+    resetCountdown()
+  }
+
+  function setExpiredTestDate() {
+    selectedTargetDate = new Date(Date.now() - 1_000)
+    targetInputValue = formatDateTimeLocal(selectedTargetDate)
+    resetCountdown()
+  }
+
   function resetCountdown() {
     now = new Date()
     revealScheduled = false
     showFirework = false
+
+    if (selectedTargetDate.getTime() <= now.getTime()) {
+      smoothTargetDate = new Date(Date.now() + 3_000)
+      graceCountdownStarted = true
+    } else {
+      smoothTargetDate = null
+      graceCountdownStarted = false
+    }
   }
 
   function forwardToBirthday() {
@@ -263,7 +322,19 @@
   onMount(() => {
     const tick = window.setInterval(() => {
       now = new Date()
+      if (
+        !isBirthdayRoute &&
+        selectedTargetDate.getTime() <= now.getTime() &&
+        !graceCountdownStarted &&
+        !revealScheduled
+      ) {
+        startGraceCountdown()
+      }
     }, 1000)
+
+    if (!isBirthdayRoute) {
+      resetCountdown()
+    }
 
     observeRevealNodes()
 
@@ -399,10 +470,20 @@
     {/if}
 
     <section class="countdown-content">
-      <p class="kicker countdown-enter">{isCountdownDone ? 'DAS WARTEN IST VORBEI' : 'ETWAS BESONDERES NAHT'}</p>
+      <p class="kicker countdown-enter">
+        {#if isCountdownDone}
+          DAS WARTEN IST VORBEI
+        {:else if isGraceCountdown}
+          DIE ÜBERRASCHUNG STARTET
+        {:else}
+          ETWAS BESONDERES NAHT
+        {/if}
+      </p>
       <h1 class="countdown-enter delay-1">
         {#if isCountdownDone}
           Gleich wird das Geheimnis gelüftet.
+        {:else if isGraceCountdown}
+          Einen kleinen Moment noch.<br /><span>Die Magie beginnt gleich.</span>
         {:else}
           Die Zeit verrät es noch nicht.<br /><span>Aber sie läuft dir davon.</span>
         {/if}
@@ -431,8 +512,37 @@
       </div>
 
       <p class="wait-text countdown-enter delay-3">
-        {isCountdownDone ? 'Öffne die Überraschung…' : 'Sei geduldig. Manche Dinge sind es wert, darauf zu warten.'}
+        {#if isCountdownDone}
+          Öffne die Überraschung…
+        {:else if isGraceCountdown}
+          Der Countdown war bereit — jetzt gibt es noch einen sanften 3-Sekunden-Start.
+        {:else}
+          Sei geduldig. Manche Dinge sind es wert, darauf zu warten.
+        {/if}
       </p>
+
+      <div class="dev-controls countdown-enter delay-3" class:open={devControlsOpen}>
+        <button type="button" class="dev-toggle" on:click={() => (devControlsOpen = !devControlsOpen)}>
+          Test-Zeit wählen
+        </button>
+
+        {#if devControlsOpen}
+          <div class="dev-panel">
+            <label for="target-date">Countdown-Ziel</label>
+            <input
+              id="target-date"
+              type="datetime-local"
+              bind:value={targetInputValue}
+              on:change={applyTargetDate}
+            />
+            <div class="dev-actions">
+              <button type="button" on:click={applyTargetDate}>Übernehmen</button>
+              <button type="button" on:click={setExpiredTestDate}>Jetzt 3s testen</button>
+              <button type="button" on:click={resetToProductionDate}>15.09.2026</button>
+            </div>
+          </div>
+        {/if}
+      </div>
     </section>
   </main>
 {/if}
