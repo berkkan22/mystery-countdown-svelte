@@ -111,20 +111,28 @@
     window.setTimeout(revealVisibleBirthdayContent, 0)
   }
 
-  function createOscillator(ctx: AudioContext, frequency: number, start: number, duration: number) {
+  function createOscillator(
+    ctx: AudioContext,
+    frequency: number,
+    start: number,
+    duration: number,
+    gainLevel = 0.1,
+    type: OscillatorType = 'triangle',
+  ) {
     const oscillator = ctx.createOscillator()
     const gain = ctx.createGain()
 
-    oscillator.type = 'triangle'
+    oscillator.type = type
     oscillator.frequency.setValueAtTime(frequency, start)
     gain.gain.setValueAtTime(0.0001, start)
-    gain.gain.exponentialRampToValueAtTime(0.12, start + 0.03)
+    gain.gain.exponentialRampToValueAtTime(gainLevel, start + 0.035)
+    gain.gain.exponentialRampToValueAtTime(Math.max(gainLevel * 0.56, 0.0002), start + duration * 0.62)
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration)
 
     oscillator.connect(gain)
     gain.connect(ctx.destination)
     oscillator.start(start)
-    oscillator.stop(start + duration + 0.03)
+    oscillator.stop(start + duration + 0.05)
   }
 
   async function startHappyBirthday() {
@@ -137,13 +145,19 @@
     await audioContext.resume()
 
     const notes: Array<[string, number]> = [
-      ['G4', 0.35], ['G4', 0.18], ['A4', 0.55], ['G4', 0.55], ['C5', 0.55], ['B4', 0.9],
-      ['G4', 0.35], ['G4', 0.18], ['A4', 0.55], ['G4', 0.55], ['D5', 0.55], ['C5', 0.9],
-      ['G4', 0.35], ['G4', 0.18], ['G5', 0.55], ['E5', 0.55], ['C5', 0.55], ['B4', 0.55], ['A4', 0.9],
-      ['F5', 0.35], ['F5', 0.18], ['E5', 0.55], ['C5', 0.55], ['D5', 0.55], ['C5', 1.1],
+      ['G4', 0.34], ['G4', 0.18], ['A4', 0.54], ['G4', 0.54], ['C5', 0.54], ['B4', 0.92],
+      ['G4', 0.34], ['G4', 0.18], ['A4', 0.54], ['G4', 0.54], ['D5', 0.54], ['C5', 0.92],
+      ['G4', 0.34], ['G4', 0.18], ['G5', 0.54], ['E5', 0.54], ['C5', 0.54], ['B4', 0.54], ['A4', 0.92],
+      ['F5', 0.34], ['F5', 0.18], ['E5', 0.54], ['C5', 0.54], ['D5', 0.54], ['C5', 1.12],
     ]
 
     const frequencies: Record<string, number> = {
+      C3: 130.81,
+      G3: 196.0,
+      C4: 261.63,
+      D4: 293.66,
+      E4: 329.63,
+      F4: 349.23,
       G4: 392.0,
       A4: 440.0,
       B4: 493.88,
@@ -154,17 +168,48 @@
       G5: 783.99,
     }
 
+    const harmonies: Record<string, string> = {
+      A4: 'F4',
+      B4: 'G4',
+      C5: 'E4',
+      D5: 'F4',
+      E5: 'G4',
+      F5: 'A4',
+      G5: 'C5',
+    }
+    const bassRoots = ['C3', 'G3', 'C3', 'F4']
+
     let start = audioContext.currentTime + 0.08
-    notes.forEach(([note, duration]) => {
-      createOscillator(audioContext!, frequencies[note], start, duration)
-      start += duration + 0.08
-    })
+    for (let repeat = 0; repeat < 3; repeat += 1) {
+      notes.forEach(([note, duration], index) => {
+        const phrase = Math.min(Math.floor(index / 6), bassRoots.length - 1)
+        if (index % 6 === 0) {
+          createOscillator(audioContext!, frequencies[bassRoots[phrase]], start, 2.85, 0.034, 'sine')
+        }
+
+        createOscillator(audioContext!, frequencies[note], start, duration, 0.095, 'triangle')
+
+        const harmony = harmonies[note]
+        if (harmony && index % 2 === 0) {
+          createOscillator(audioContext!, frequencies[harmony], start + 0.015, duration * 0.92, 0.028, 'sine')
+        }
+
+        if (index % 5 === 2) {
+          createOscillator(audioContext!, frequencies[note] * 2, start + 0.025, duration * 0.42, 0.012, 'sine')
+        }
+
+        start += duration + 0.08
+      })
+      start += 0.45
+    }
 
     isPlaying = true
     const timeout = window.setTimeout(() => {
+      void audioContext?.close()
+      audioContext = null
       isPlaying = false
       stopSong = null
-    }, (start - audioContext.currentTime + 0.5) * 1000)
+    }, (start - audioContext.currentTime + 0.25) * 1000)
 
     stopSong = () => {
       window.clearTimeout(timeout)
