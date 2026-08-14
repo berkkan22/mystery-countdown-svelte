@@ -150,7 +150,7 @@ a {
   z-index: 4;
   pointer-events: none;
   overflow: hidden;
-  animation: firework-layer-fade 2.35s ease-out both;
+  animation: firework-layer-fade 5s ease-out both;
 }
 
 .firework-burst {
@@ -196,7 +196,7 @@ a {
   background: var(--color);
   box-shadow: 0 0 12px var(--color), 0 0 28px var(--color);
   transform: translate(-50%, -50%) rotate(var(--angle));
-  animation: firework-spark 1.55s cubic-bezier(0.12, 0.82, 0.24, 1) var(--delay) both;
+  animation: firework-spark 1.75s cubic-bezier(0.12, 0.82, 0.24, 1) var(--delay) both;
 }
 
 .firework-burst span::after {
@@ -221,7 +221,7 @@ a {
   border-radius: 999px;
   background: var(--color);
   box-shadow: 0 0 14px var(--color);
-  animation: glitter-fall 1.75s ease-out var(--delay) both;
+  animation: glitter-fall 2.05s ease-out var(--delay) both;
 }
 
 @keyframes firework-layer-fade {

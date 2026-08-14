@@ -30,7 +30,7 @@
   $: if (!isBirthdayRoute && isCountdownDone && !revealScheduled) {
     revealScheduled = true
     showFirework = true
-    window.setTimeout(forwardToBirthday, 2600)
+    window.setTimeout(forwardToBirthday, 5000)
   }
 
   $: if (isBirthdayRoute && !birthdayAutoplayTried) {
@@ -55,14 +55,16 @@
 
   const fireworkBursts = [
     { x: 50, y: 36, delay: 0 },
-    { x: 34, y: 46, delay: 120 },
-    { x: 66, y: 45, delay: 220 },
-    { x: 44, y: 58, delay: 340 },
-    { x: 58, y: 57, delay: 430 },
-    { x: 25, y: 34, delay: 520 },
-    { x: 75, y: 33, delay: 620 },
-    { x: 18, y: 52, delay: 720 },
-    { x: 82, y: 54, delay: 820 },
+    { x: 34, y: 46, delay: 180 },
+    { x: 66, y: 45, delay: 360 },
+    { x: 44, y: 58, delay: 760 },
+    { x: 58, y: 57, delay: 1080 },
+    { x: 25, y: 34, delay: 1480 },
+    { x: 75, y: 33, delay: 1880 },
+    { x: 18, y: 52, delay: 2460 },
+    { x: 82, y: 54, delay: 3080 },
+    { x: 42, y: 31, delay: 3580 },
+    { x: 61, y: 41, delay: 4020 },
   ]
 
   const fireworkColors = ['#fff3bd', '#ff4f8b', '#46e7ff', '#b47cff', '#7dff8a', '#ffb347']
@@ -348,7 +350,7 @@
         {/each}
         <div class="firework-glitter">
           {#each Array(58) as _, i}
-            <span style={`--left:${(i * 23 + 7) % 100}%; --top:${(i * 37 + 11) % 70}%; --delay:${(i % 10) * 90}ms; --color:${fireworkColors[i % fireworkColors.length]}`}></span>
+            <span style={`--left:${(i * 23 + 7) % 100}%; --top:${(i * 37 + 11) % 70}%; --delay:${(i % 18) * 210}ms; --color:${fireworkColors[i % fireworkColors.length]}`}></span>
           {/each}
         </div>
       </div>
