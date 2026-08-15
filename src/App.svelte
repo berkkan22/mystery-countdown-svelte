@@ -16,6 +16,8 @@
   let selectedTargetDate = productionTargetDate
   let smoothTargetDate: Date | null = null
   let graceCountdownStarted = false
+  // Dev controls are intentionally hidden for production. Set this to true to comment them back in.
+  const showDevControls = false
   let devControlsOpen = false
   let targetInputValue = formatDateTimeLocal(productionTargetDate)
   let path = window.location.pathname
@@ -521,28 +523,30 @@
         {/if}
       </p>
 
-      <div class="dev-controls countdown-enter delay-3" class:open={devControlsOpen}>
-        <button type="button" class="dev-toggle" on:click={() => (devControlsOpen = !devControlsOpen)}>
-          Test-Zeit wählen
-        </button>
+      {#if showDevControls}
+        <div class="dev-controls countdown-enter delay-3" class:open={devControlsOpen}>
+          <button type="button" class="dev-toggle" on:click={() => (devControlsOpen = !devControlsOpen)}>
+            Test-Zeit wählen
+          </button>
 
-        {#if devControlsOpen}
-          <div class="dev-panel">
-            <label for="target-date">Countdown-Ziel</label>
-            <input
-              id="target-date"
-              type="datetime-local"
-              bind:value={targetInputValue}
-              on:change={applyTargetDate}
-            />
-            <div class="dev-actions">
-              <button type="button" on:click={applyTargetDate}>Übernehmen</button>
-              <button type="button" on:click={setExpiredTestDate}>Jetzt 3s testen</button>
-              <button type="button" on:click={resetToProductionDate}>15.09.2026</button>
+          {#if devControlsOpen}
+            <div class="dev-panel">
+              <label for="target-date">Countdown-Ziel</label>
+              <input
+                id="target-date"
+                type="datetime-local"
+                bind:value={targetInputValue}
+                on:change={applyTargetDate}
+              />
+              <div class="dev-actions">
+                <button type="button" on:click={applyTargetDate}>Übernehmen</button>
+                <button type="button" on:click={setExpiredTestDate}>Jetzt 3s testen</button>
+                <button type="button" on:click={resetToProductionDate}>15.09.2026</button>
+              </div>
             </div>
-          </div>
-        {/if}
-      </div>
+          {/if}
+        </div>
+      {/if}
     </section>
   </main>
 {/if}
